@@ -13,8 +13,9 @@ class PolyPotentialMD(MoleculePotential):
 
     def setup(self):
         pdb = app.PDBFile(self.start_file)
-        forcefield = app.ForceField('amber/protein.ff14SBonlysc.xml',
-                                    'implicit/gbn2.xml')
+        # forcefield = app.ForceField('amber/protein.ff14SBonlysc.xml', 'implicit/gbn2.xml')
+        forcefield = app.ForceField("/home/shpark/prj-tps/SOCTransitionPaths/forcefield/ff99SBildn.xml")
+        
         system = forcefield.createSystem(
             pdb.topology,
             nonbondedMethod=app.NoCutoff,

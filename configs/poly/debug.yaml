@@ -1,11 +1,11 @@
-molecule: alanine
+molecule: poly
 result_dir: results
 force: False
 device: cuda
-T: 5000
+T: 100
 std: 0.05
 dt: 1.0
-n_rollouts: 10000
-n_samples: 16
+n_rollouts: 10
+n_samples: 4
 lr: 0.0001
 wandb: True

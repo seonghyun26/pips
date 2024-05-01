@@ -1,4 +1,4 @@
 cd ../
 
 CUDA_VISIBLE_DEVICES=$1 python train.py \
-  --config configs/poly/default.yaml
+  --config configs/alanine/default.yaml

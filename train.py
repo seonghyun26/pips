@@ -8,7 +8,6 @@ import numpy as np
 
 from tqdm import tqdm
 from solvers.PICE import PICE
-from policies.Alanine import NNPolicy
 from plotting.Loggers import CostsLogger
 from Dynamics.AlanineDynamics import AlanineDynamics
 from Dynamics.PolytrimerDynamics import PolyDynamics
@@ -37,12 +36,12 @@ log_dir = f'{cfg["result_dir"]}/{molecule}/{current_time}'
 if not os.path.exists(log_dir):
   os.makedirs(log_dir)
 logger = CostsLogger(log_dir)
-if config['wandb']:
+if cfg['wandb']:
   wandb.init(
-    project='PICE',
+    project='pice',
     entity='eddy26',
-    run_name=f'{current_time}-{molecule}',
-    cfg=cfg
+    name=f'{current_time}-{molecule}',
+    config=cfg
   )
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -50,10 +49,13 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 n_samples = cfg['n_samples']
 if molecule == 'alanine':
   environment = AlanineDynamics(loss_func='pairwise_dist', n_samples=n_samples, device=device, save_file=log_dir)
+  from policies.Alanine import NNPolicy
 elif molecule == 'poly':
   environment = PolyDynamics(loss_func='pairwise_dist', n_samples=n_samples, device=device, save_file=log_dir)
+  from policies.Poly import NNPolicy
 elif molecule == 'chignolin':
   environment = ChignolinDynamics(loss_func='pairwise_dist', n_samples=n_samples, device=device, save_file=log_dir)
+  from policies.Chignolin import NNPolicy
 else:
   raise ValueError(f"Unknown molecule: {molecule}")
 dims = environment.dims
@@ -72,7 +74,7 @@ lr = cfg['lr']
 PICE(
   environment, nn_policy, n_rollouts, n_samples, n_steps,
   dt, std, dims * 2, R, logger, force, [],
-  True, log_dir, device=device, lr=lr, wandb=config['wandb']
+  True, log_dir, device=device, lr=lr, wandb=cfg['wandb']
 )
 
 torch.save(nn_policy, f'{log_dir}/final_policy')

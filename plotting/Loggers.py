@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-
+import wandb
 
 class CostsLogger():
     def __init__(self, file):
@@ -18,7 +18,7 @@ class CostsLogger():
         np.save(f"{self.file}/{fix}_action.npy", costs_action.detach().cpu().numpy())
 
 
-    def log(self, paths, costs_q, costs_noise, costs_action, path_cost, path_cost_phi, path_cost_final, path_cost_exp_normalized, policy, step):
+    def log(self, paths, costs_q, costs_noise, costs_action, path_cost, path_cost_phi, path_cost_final, path_cost_exp_normalized, policy, step, wandb_use=False):
         path_cost_final_current = path_cost_final.mean(dim=0)
         path_cost_phi_current = path_cost_phi.mean(dim=0)
 
@@ -45,3 +45,15 @@ class CostsLogger():
 
         with open(f"{self.file}/costs.txt", 'a+') as f:
             f.write(line)
+            
+        if wandb_use:
+            wandb.log({
+                "costs_q_sum": costs_q.sum(dim=1).mean(dim=0), "costs_q_std": costs_q.sum(dim=1).std(dim=0),
+                "costs_noise_sum": costs_noise.sum(dim=1).mean(dim=0), "costs_noise_std": costs_noise.sum(dim=1).std(dim=0),
+                "costs_action_sum": costs_action.sum(dim=1).mean(dim=0), "costs_action_std": costs_action.sum(dim=1).std(dim=0),
+                "path_cost_sum": path_cost.mean(dim=0), "path_cost_std": path_cost.std(dim=0),
+                "path_cost_phi_current": path_cost_phi_current, "path_cost_phi_current_std": path_cost_phi.std(dim=0),
+                "path_cost_final_current": path_cost_final_current, "path_cost_final_current_std": path_cost_final.std(dim=0),
+                "path_cost_exp_normalized": path_cost_exp_normalized.mean(dim=0), "path_cost_exp_normalized_std": path_cost_exp_normalized.std(dim=0),
+                }, step=step
+            )
