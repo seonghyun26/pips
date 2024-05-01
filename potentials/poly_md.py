@@ -8,7 +8,8 @@ from potentials.MoleculePotential import MoleculePotential
 
 class PolyPotentialMD(MoleculePotential):
     def __init__(self, start_file, index, reset_steps=100, save_file=None):
-        super().__init__(start_file, index, reset_steps, save_file)
+        # super().__init__(start_file, index, reset_steps, save_file)
+        super().__init__(start_file, index, save_file)
 
     def setup(self):
         pdb = app.PDBFile(self.start_file)
@@ -44,8 +45,9 @@ class PolyPotentialMD(MoleculePotential):
 
         properties = {'DeviceIndex': '0', 'Precision': 'mixed'}
 
-        simulation = app.Simulation(pdb.topology, system, integrator,
-                                    platform, properties)
+        # simulation = app.Simulation(pdb.topology, system, integrator, platform, properties)
+        simulation = app.Simulation(pdb.topology, system, integrator)
+        
         simulation.context.setPositions(pdb.positions)
 
         return pdb, simulation, external_force

@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 
 def PICE(env, policy, n_rollouts, n_samples, n_steps, dt, std, dim, R, logger, force, plotters=None, verbose=True,
-         file=None, device='cpu', lr=0.00001, start_step=0):
+         file=None, device='cpu', lr=0.00001, start_step=0, wandb=False):
     p_dim = dim
     u_dim = dim // 2  # Doesn't include the positions
     T = dt * n_steps
@@ -49,7 +49,8 @@ def PICE(env, policy, n_rollouts, n_samples, n_steps, dt, std, dim, R, logger, f
         for s in tqdm(range(0, n_steps)):
             # if verbose: print(s)
             x = new_state.detach()
-            t = torch.tensor(s * dt)
+            # t = torch.tensor(s * dt)
+            t = (s * dt).clone().detach()
             # Determine the action
             if force:
                 update_u = policy(x, t)
@@ -137,5 +138,8 @@ def PICE(env, policy, n_rollouts, n_samples, n_steps, dt, std, dim, R, logger, f
 
         logger.log(paths[:, :, :].detach(), costs_q, costs_noise, costs_action, path_cost, path_cost_phi,
                    path_cost_final, path_cost_exp, policy, r)
+        if wandb:
+            wandb.log({"Cost": path_cost.mean().item(), "Cost_phi": path_cost_phi.mean().item(),
+                       "Cost_final": path_cost_final.mean().item(), "Normalizing": normalizing.item()}, step=r)
 
         env.reset()

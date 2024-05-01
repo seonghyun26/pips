@@ -42,8 +42,8 @@ class AlaninePotentialMD(MoleculePotential):
 
         properties = {'DeviceIndex': '0', 'Precision': 'mixed'}
 
-        simulation = app.Simulation(pdb.topology, system, integrator,
-                                    platform, properties)
+        # simulation = app.Simulation(pdb.topology, system, integrator, platform, properties)
+        simulation = app.Simulation(pdb.topology, system, integrator)
         simulation.context.setPositions(pdb.positions)
 
         return pdb, simulation, external_force
