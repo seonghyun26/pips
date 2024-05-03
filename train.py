@@ -73,8 +73,8 @@ n_samples = cfg['n_samples']
 lr = cfg['lr']
 PICE(
   environment, nn_policy, n_rollouts, n_samples, n_steps,
-  dt, std, dims * 2, R, logger, force, [],
-  True, log_dir, device=device, lr=lr, wandb=cfg['wandb']
+  dt, std, dims * 2, R, logger, force, [], True, log_dir, 
+  device=device, lr=lr, wandb=cfg['wandb']
 )
 
 torch.save(nn_policy, f'{log_dir}/final_policy')

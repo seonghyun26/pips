@@ -1,0 +1,11 @@
+molecule: chignolin
+result_dir: results
+force: True
+device: cuda
+T: 5000
+std: 0.05
+dt: 1.0
+n_rollouts: 10000
+n_samples: 16
+lr: 0.0001
+wandb: True

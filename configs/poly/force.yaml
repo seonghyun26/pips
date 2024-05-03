@@ -1,6 +1,6 @@
 molecule: poly
 result_dir: results
-force: False
+force: True
 device: cuda
 T: 5000
 std: 0.05
