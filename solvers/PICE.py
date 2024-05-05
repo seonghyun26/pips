@@ -1,5 +1,5 @@
 import torch
-from tqdm import tqdm
+# from tqdm import tqdm
 
 
 def PICE(env, policy, n_rollouts, n_samples, n_steps, dt, std, dim, R, logger, force, plotters=None, verbose=True,
@@ -46,7 +46,7 @@ def PICE(env, policy, n_rollouts, n_samples, n_steps, dt, std, dim, R, logger, f
         paths[:, 0, :] = env.starting_positions(n_samples)
         new_state = paths[:, 0, :].to(device)
 
-        for s in tqdm(range(0, n_steps)):
+        for s in range(0, n_steps):
             # if verbose: print(s)
             x = new_state.detach()
             # t = torch.tensor(s * dt)
@@ -109,7 +109,7 @@ def PICE(env, policy, n_rollouts, n_samples, n_steps, dt, std, dim, R, logger, f
         # This is not in the original method, but it should help with us not setting T = 1
         path_cost /= T
 
-        path_cost_phi = env.phi(new_state)
+        path_cost_phi, epd = env.phi(new_state)
         path_cost_final = path_cost + path_cost_phi
         path_cost_final_subtract = path_cost_final - path_cost_final.min()
         path_cost_exp = torch.exp(-(path_cost_final_subtract))
@@ -137,6 +137,6 @@ def PICE(env, policy, n_rollouts, n_samples, n_steps, dt, std, dim, R, logger, f
         policy_optimizers.step()
 
         logger.log(paths[:, :, :].detach(), costs_q, costs_noise, costs_action, path_cost, path_cost_phi,
-                   path_cost_final, path_cost_exp, policy, step=r, wandb_use=wandb)
+                   path_cost_final, path_cost_exp, policy, step=r, epd=epd, wandb_use=wandb)
 
         env.reset()

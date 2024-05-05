@@ -46,5 +46,5 @@ class AlanineDynamics(MoleculeBaseDynamics):
 
             expected_cost_distance_final = torch.mean(cost_distance_final, 0)
 
-        return expected_cost_distance_final
+        return expected_cost_distance_final, cost_distance
     

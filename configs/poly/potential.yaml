@@ -3,9 +3,9 @@ result_dir: results
 force: False
 device: cuda
 T: 5000
-std: 0.05
+std: 0.1
 dt: 1.0
-n_rollouts: 10000
-n_samples: 16
-lr: 0.0001
+n_rollouts: 500
+n_samples: 25
+lr: 0.00003
 wandb: True

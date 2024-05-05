@@ -18,7 +18,7 @@ class CostsLogger():
         np.save(f"{self.file}/{fix}_action.npy", costs_action.detach().cpu().numpy())
 
 
-    def log(self, paths, costs_q, costs_noise, costs_action, path_cost, path_cost_phi, path_cost_final, path_cost_exp_normalized, policy, step, wandb_use=False):
+    def log(self, paths, costs_q, costs_noise, costs_action, path_cost, path_cost_phi, path_cost_final, path_cost_exp_normalized, policy, step, epd=0, wandb_use=False):
         path_cost_final_current = path_cost_final.mean(dim=0)
         path_cost_phi_current = path_cost_phi.mean(dim=0)
 
@@ -35,6 +35,7 @@ class CostsLogger():
             self.save("phi", paths, costs_q, costs_noise, costs_action, policy)
 
         line = str(step)
+        line += f', {epd.mean() * 1000}'
         line += f', {costs_q.sum(dim=1).mean(dim=0)}, {costs_q.sum(dim=1).std(dim=0)}'
         line += f', {costs_noise.sum(dim=1).mean(dim=0)}, {costs_noise.sum(dim=1).std(dim=0)}'
         line += f', {costs_action.sum(dim=1).mean(dim=0)}, {costs_action.sum(dim=1).std(dim=0)}'
@@ -48,6 +49,7 @@ class CostsLogger():
             
         if wandb_use:
             wandb.log({
+                "epd": epd.mean() * 1000,
                 "costs_q_sum": costs_q.sum(dim=1).mean(dim=0), "costs_q_std": costs_q.sum(dim=1).std(dim=0),
                 "costs_noise_sum": costs_noise.sum(dim=1).mean(dim=0), "costs_noise_std": costs_noise.sum(dim=1).std(dim=0),
                 "costs_action_sum": costs_action.sum(dim=1).mean(dim=0), "costs_action_std": costs_action.sum(dim=1).std(dim=0),
