@@ -44,6 +44,11 @@ if cfg['wandb']:
     config=cfg
   )
 
+if hasattr(cfg, 'seed'):
+  seed = cfg['seed']
+else:
+  seed = 42
+torch.manual_seed(seed)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 n_samples = cfg['n_samples']
@@ -65,6 +70,7 @@ T = cfg['T']
 std = torch.tensor(cfg['std']).to(device)
 R = torch.eye(dims).to(device)
 nn_policy = NNPolicy(device, dims=dims, force=force, T=T)
+
 
 dt = torch.tensor(cfg['dt']).to(device)
 n_steps = int(T / dt)

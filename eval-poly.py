@@ -1,11 +1,9 @@
 from tqdm import tqdm
 from openmm import app
-from policies.Alanine import NNPolicy as AlaninePolicy
-from policies.Poly import NNPolicy as PolyPolicy
-from policies.Chignolin import NNPolicy as ChignolinPolicy
+from policies.Poly import NNPolicy as NNPolicy
 from potentials.md_utils import ForceReporter
 from openmmtools.integrators import VVVRIntegrator
-from plotting.PlotPathsAlanine import PlotPathsAlanine
+# from plotting.PlotPathsAlanine import PlotPathsAlanine
 
 import torch
 import numpy as np
@@ -13,10 +11,13 @@ import mdtraj as md
 import openmm as mm
 import openmm.unit as unit
 
+date = "0505-141655"
+device = 'cuda:7'
+seed = 1
 
 # Classes
 
-class AlanineOpenMM():
+class PolyOpenMM():
     def __init__(self, start_file, device, overide=True, index=0):
         """
         Intialize the OpenMM configuration
@@ -26,13 +27,14 @@ class AlanineOpenMM():
         self.device = device
 
         # Setup openMM
-        self.forcefield = app.ForceField('amber99sbildn.xml', 'tip3p.xml')
+        self.forcefield = app.ForceField("/home/shpark/prj-tps/SOCTransitionPaths/forcefield/ff99SBildn.xml")
         self.pdb = app.PDBFile(self.start_file)
         self.system = self.forcefield.createSystem(
             self.pdb.topology,
-            nonbondedMethod=app.PME,
+            nonbondedMethod=app.NoCutoff,
             nonbondedCutoff=1.0 * unit.nanometers,
             constraints=app.HBonds,
+            rigidWater=True,
             ewaldErrorTolerance=0.0005
         )
 
@@ -60,16 +62,14 @@ class AlanineOpenMM():
         self.properties = {'DeviceIndex': '0', 'Precision': 'mixed'}
 
         # Finalize simulation
-        self.simulation = app.Simulation(self.pdb.topology, self.system, self.integrator,
-                                    self.platform, self.properties)
+        self.simulation = app.Simulation(self.pdb.topology, self.system, self.integrator)
         self.simulation.context.setPositions(self.pdb.positions)
         
         self.simulation.step(1)
         self.simulation.minimizeEnergy()
-        
-        # if overide:
-        #     self.simulation.saveCheckpoint(f"./simulation_save_{self.index}")
-            
+    
+        if overide:
+            self.simulation.saveCheckpoint(f"./results/poly/{date}/simulation_save_{self.index}")
 
     def get_closest_minima(self):
         """
@@ -111,7 +111,7 @@ class AlanineOpenMM():
         Resets the atoms to the initial positions and removes the current bias potential. 
         The minimizeEnergy() call cancels out the velocities. 
         """
-        self.simulation.loadCheckpoint(f"./results/notebook/simulation_save_{self.index}")
+        self.simulation.loadCheckpoint(f"./results/poly/{date}/simulation_save_{self.index}")
         for i in range(len(self.pdb.positions)):
             self.external_force.setParticleParameters(i, i, [0, 0, 0])
         self.external_force.updateParametersInContext(self.simulation.context)
@@ -164,9 +164,6 @@ def control_cost(control, noise, R):
 
 
 # Step 1: Configs
-date = "0505-141655"
-device = 'cuda:7'
-seed = 1
 
 T = 500.  # Time horizon
 n_rollouts = 10 #15000 # Number of epochs
@@ -184,16 +181,16 @@ torch.manual_seed(seed)
 # Step 2: Initialize the different OpenMM implemenations
 MDs = []
 for i in tqdm(range(0, n_samples)):
-    pot = AlanineOpenMM('./potentials/files/AD_c7eq.pdb', device, index=i)
+    pot = PolyOpenMM('./potentials/files/3mer_pp2.pdb', device, index=i)
     MDs.append(pot)
     
 # Step 3: Set loss functions
-endMD = AlanineOpenMM('./potentials/files/AD_c7ax.pdb', device, overide=False)
+endMD = PolyOpenMM('./potentials/files/3mer_pp1.pdb', device, overide=False)
 ending_positions = endMD.get_closest_minima()
 R = torch.eye(u_dim).to(device)
 
 # Step 4: Policy
-policy = NNPolicy(device, dims = u_dim, force=True, T=T, vel_given=False)
+policy = NNPolicy(device, dims = u_dim, force=True, T=T)
 paths = torch.zeros((n_samples, n_steps+1, u_dim), device=device)
 history_control = torch.zeros((n_samples, n_steps, u_dim), device=device)
 history_noise = torch.zeros((n_samples, n_steps, u_dim), device=device)
