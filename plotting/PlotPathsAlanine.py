@@ -138,17 +138,22 @@ def PlotPathsAlanine(paths, target):
         tmp = ax.plot(phi, psi, marker='o', linestyle='None', markersize=2, alpha=1.)
 
         colors.append(tmp[0].get_color())
-    ax.scatter(phis_start, psis_start, edgecolors='black', c='w', zorder=100, s=100, marker='*')
+    
+    ax.scatter(phis_start, psis_start, edgecolors='black', c='w', zorder=100, s=160, marker='*')
 
     target = target.cpu().numpy()  # .view(-1, 3)
     psis_target = []
     phis_target = []
     psis_target.append((new_dihedral(target[angle_1, :])))
     phis_target.append(new_dihedral(target[angle_2, :]))
-    ax.scatter(phis_target, psis_target, edgecolors='w', c='w', zorder=100, s=10)
+    ax.scatter(phis_target, psis_target, edgecolors='w', c='w', zorder=100, s=160)
 
-    plt.xlabel('phi')
-    plt.ylabel('psi')
+    plt.xlabel('\u03A6', fontsize=20)
+    plt.ylabel('\u03A8', fontsize=20)
+    plt.xticks(labels=None)
+    plt.yticks(labels=None)
     plt.show()
+    plt.savefig("PIPS.pdf", dpi=300)
+    print("File saved!")
 
     return colors
