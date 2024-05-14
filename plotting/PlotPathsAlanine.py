@@ -3,6 +3,10 @@ import numpy as np
 import torch
 
 
+z_max = 32
+circle_size = 1200
+saddle_size = 2400
+
 class AlaninePotential():
     def __init__(self):
         super().__init__()
@@ -21,10 +25,7 @@ class AlaninePotential():
 
         i = 0
         for line in lines[1:]:
-            # if line == '  \n':
-            #     psi = psi + 1
-            #     phi = 0
-            #     continue
+
             splits = line[0:-1].split(" ")
             vals = [y for y in splits if y != '']
 
@@ -116,7 +117,7 @@ def PlotPathsAlanine(paths, target):
     z = potential.potential(inp)
     z = z.view(y.shape[0], y.shape[1])
 
-    plt.contourf(xs, ys, z, levels=100, zorder=0)
+    plt.contourf(xs, ys, z, levels=z_max, zorder=0)
 
     paths_ = paths.reshape(paths.shape[0], 501, 22, 3).cpu().numpy()
 
@@ -139,21 +140,32 @@ def PlotPathsAlanine(paths, target):
 
         colors.append(tmp[0].get_color())
     
-    ax.scatter(phis_start, psis_start, edgecolors='black', c='w', zorder=100, s=160, marker='*')
+    ax.scatter(phis_start[0], psis_start[0], edgecolors='black', c='w', zorder=z_max, s=circle_size)
 
     target = target.cpu().numpy()  # .view(-1, 3)
     psis_target = []
     phis_target = []
     psis_target.append((new_dihedral(target[angle_1, :])))
     phis_target.append(new_dihedral(target[angle_2, :]))
-    ax.scatter(phis_target, psis_target, edgecolors='w', c='w', zorder=100, s=160)
+    ax.scatter(phis_target, psis_target, edgecolors='black', c='w', zorder=z_max, s=circle_size)
 
-    plt.xlabel('\u03A6', fontsize=20)
-    plt.ylabel('\u03A8', fontsize=20)
-    plt.xticks(labels=None)
-    plt.yticks(labels=None)
+    phis_saddle = [-0.035, -0.017]
+    psis_saddle = [1.605, -0.535]
+    ax.scatter(phis_saddle, psis_saddle, edgecolors='black', c='w', zorder=z_max, s=saddle_size, marker="*")
+    plt.xlabel('\u03A6', fontsize=24, fontweight='medium')
+    plt.ylabel('\u03A8', fontsize=24, fontweight='medium')
+    plt.tick_params(
+        left = False,
+        right = False ,
+        labelleft = False , 
+        labelbottom = False,
+        bottom = False
+    ) 
+    plt.tight_layout()
+
+    
     plt.show()
-    plt.savefig("PIPS.pdf", dpi=300)
+    plt.savefig("alanine-PIPS.pdf", dpi=300)
     print("File saved!")
 
     return colors
